@@ -5,7 +5,8 @@ let p1 (cs: char list) =
     | '1'::cs1 -> Some ("1", cs1)
     | _ -> None
 
-type Parser<'a> = char list -> ('a * char list) option
+type ParserResult<'a> = ('a * char list) option
+type Parser<'a> = char list -> ParserResult<'a>
 
 let run<'a> str (parser: Parser<'a>) = parser (List.ofSeq str)
 
@@ -32,7 +33,6 @@ let (??>) parser defaultValue cs =
     match parser cs with
     | Some (value1, cs1) -> Some (value1, cs1)
     | None -> Some (defaultValue, cs)
-
 
 pchar '1' ??> "null" |> run "12345";;
 // (??>) (pchar '1') "null"
@@ -97,12 +97,12 @@ let digits1 = manyStr1 (ppred Char.IsDigit)
 // pfloat (List.ofSeq "3.1415");;
 // pfloat (List.ofSeq "12345");;
 
-let (||>) parser mapper cs =
+let (|>>) parser mapper cs =
     match parser cs with
     | Some (value, cs1) -> Some (mapper value, cs1)
     | None -> None
 
-let pfloat = digits1 <+> ((pchar '.' <+> digits1) ??> "") ||> float
+let pfloat = digits1 <+> ((pchar '.' <+> digits1) ??> "") |>> float
 
 pfloat |> run "3.1415";;
 pfloat |> run "12345";;
@@ -152,13 +152,13 @@ type Expression =
 //        | variable
 //        | variable '(' parameters ')'
 
-let rec number cs = (pfloat .>> spaces ||> Constant) cs
-and variable cs = (identifier .>> spaces ||> Variable) cs
+let rec number cs = (pfloat .>> spaces |>> Constant) cs
+and variable cs = (identifier .>> spaces |>> Variable) cs
 and term cs = (number
-           <|> (pstr "sqrt" >>. spaces >>. pchar '(' >>. expression .>> pchar ')' .>> spaces ||> Sqrt)
+           <|> (pstr "sqrt" >>. spaces >>. pchar '(' >>. expression .>> pchar ')' .>> spaces |>> Sqrt)
            <|> variable
            <|> (pchar '(' >>. expression .>> pchar ')' .>> spaces)) cs
-and factor cs = ((pchar '-' >>. spaces >>. term .>> spaces ||> Negation) <|> (term .>> spaces)) cs
+and factor cs = ((pchar '-' >>. spaces >>. term .>> spaces |>> Negation) <|> (term .>> spaces)) cs
 and addendum cs =
     let rec addendumLoop left cs =
         match (pchar '*' >>. spaces >>. factor) cs with
@@ -207,9 +207,9 @@ type Command =
 
 // assignment ::= identifier '=' expression
 
-let input = pstr "input" >>. spaces1 >>. identifier ||> Input
-let print = pstr "print" >>. spaces1 >>. identifier ||> Print
-let assignment = identifier .>> spaces .>> pchar '=' .>> spaces .>>. expression ||> Assignment
+let input = pstr "input" >>. spaces1 >>. identifier |>> Input
+let print = pstr "print" >>. spaces1 >>. identifier |>> Print
+let assignment = identifier .>> spaces .>> pchar '=' .>> spaces .>>. expression |>> Assignment
 let command = input <|> print <|> assignment
 
 command |> run "input a";;

@@ -12,7 +12,7 @@ let ppred p (cs: char list) =
     | c1::cs1 when p c1 -> Some (string c1, cs1)
     | _ -> None
 
-let (?>) parser defaultValue (cs: char list) =
+let (??>) parser defaultValue (cs: char list) =
     match parser cs with
     | Some (value1, cs1) -> Some (value1, cs1)
     | None -> Some (defaultValue, cs)
@@ -59,17 +59,17 @@ let (<|>) parser1 parser2 cs =
 
 let digits1 = manyStr1 (ppred Char.IsDigit)
 
-// let pfloat = digits1 .>>. ((pchar '.' .>>. digits1) ?> "")
+// let pfloat = digits1 .>>. ((pchar '.' .>>. digits1) ??> "")
 
 // pfloat (List.ofSeq "3.1415");;
 // pfloat (List.ofSeq "12345");;
 
-let (||>) parser mapper cs =
+let (|>>) parser mapper cs =
     match parser cs with
     | Some (value, cs1) -> Some (mapper value, cs1)
     | None -> None
 
-let pfloat = digits1 <+> ((pchar '.' <+> digits1) ?> "") ||> float
+let pfloat = digits1 <+> ((pchar '.' <+> digits1) ??> "") |>> float
 
 let spaces = manyStr (ppred Char.IsWhiteSpace)
 let spaces1 = manyStr (ppred Char.IsWhiteSpace)
@@ -105,13 +105,13 @@ type Expression =
     | Negation of Expression
     | Sqrt of Expression
 
-let rec number cs = (pfloat .>> spaces ||> Constant) cs
-and variable cs = (identifier .>> spaces ||> Variable) cs
+let rec number cs = (pfloat .>> spaces |>> Constant) cs
+and variable cs = (identifier .>> spaces |>> Variable) cs
 and term cs = (number
-           <|> (pstr "sqrt" >>. spaces >>. pchar '(' >>. expression .>> pchar ')' .>> spaces ||> Sqrt)
+           <|> (pstr "sqrt" >>. spaces >>. pchar '(' >>. expression .>> pchar ')' .>> spaces |>> Sqrt)
            <|> variable
            <|> (pchar '(' >>. expression .>> pchar ')' .>> spaces)) cs
-and factor cs = ((pchar '-' >>. spaces >>. term .>> spaces ||> Negation) <|> (term .>> spaces)) cs
+and factor cs = ((pchar '-' >>. spaces >>. term .>> spaces |>> Negation) <|> (term .>> spaces)) cs
 and addendum cs =
     let rec addendumLoop left cs =
         match (pchar '*' >>. spaces >>. factor) cs with
@@ -162,9 +162,9 @@ type Command =
     | Print of string
     | Assignment of string * Expression
 
-let input = pstr "input" >>. spaces1 >>. identifier ||> Input
-let print = pstr "print" >>. spaces1 >>. identifier ||> Print
-let assignment = identifier .>> spaces .>> pchar '=' .>> spaces .>>. expression ||> Assignment
+let input = pstr "input" >>. spaces1 >>. identifier |>> Input
+let print = pstr "print" >>. spaces1 >>. identifier |>> Print
+let assignment = identifier .>> spaces .>> pchar '=' .>> spaces .>>. expression |>> Assignment
 let command = input <|> print <|> assignment
 
 let args = Environment.GetCommandLineArgs() 
