@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "yatalks": {
+      "commandName": "Project",
+      "commandLineArgs": "square.clc"
+    }
+  }
+}
