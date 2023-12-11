@@ -1,6 +1,6 @@
 open System
 
-let p1 (cs: char list) =
+let p1 cs =
     match cs with
     | '1'::cs1 -> Some ("1", cs1)
     | _ -> None
@@ -57,7 +57,7 @@ let manyStr parser (cs: char list) =
 
     iter "" cs
 
-manyStr (ppred Char.IsDigit) (List.ofSeq "12345");;
+manyStr (ppred Char.IsDigit) |> run "12345";;
 manyStr (ppred Char.IsDigit) (List.ofSeq "abcde");;
 
 let manyStr1 parser cs = (parser <+> manyStr parser) cs
@@ -108,7 +108,7 @@ pfloat |> run "3.1415";;
 pfloat |> run "12345";;
 
 let spaces = manyStr (ppred Char.IsWhiteSpace)
-let spaces1 = manyStr (ppred Char.IsWhiteSpace)
+let spaces1 = manyStr1 (ppred Char.IsWhiteSpace)
 
 let (.>>) parser1 parser2 cs =
     match parser1 cs with
@@ -135,7 +135,7 @@ type Expression =
     | Constant of float
     | Variable of string
     | Addition of Expression * Expression
-    | Substraction of Expression * Expression
+    | Subtraction of Expression * Expression
     | Multiplication of Expression * Expression
     | Division of Expression * Expression
     | Negation of Expression
@@ -178,7 +178,7 @@ and expression cs =
         | Some (right, cs2) -> expressionLoop (Addition (left, right)) cs2
         | None ->
             match (pchar '-' >>. spaces >>. addendum) cs with
-            | Some (right, cs3) -> expressionLoop (Substraction (left, right)) cs3
+            | Some (right, cs3) -> expressionLoop (Subtraction (left, right)) cs3
             | None -> Some (left, cs)
 
     match addendum cs with
@@ -215,3 +215,18 @@ let command = input <|> print <|> assignment
 command |> run "input a";;
 command |> run "print x";;
 command |> run "a = b + 4 * x";;
+
+
+
+type ToDo =
+    { isStarted: bool
+      startedAt: DateTime
+      isFinished: bool
+      finishedAt: DateTime
+      description: string
+    }
+    
+type ToDo2 =
+    | Created of string
+    | Stated of string * DateTime
+    | Finished of string * DateTime * DateTime

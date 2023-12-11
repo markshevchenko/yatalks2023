@@ -99,7 +99,7 @@ type Expression =
     | Constant of float
     | Variable of string
     | Addition of Expression * Expression
-    | Substraction of Expression * Expression
+    | Subtraction of Expression * Expression
     | Multiplication of Expression * Expression
     | Division of Expression * Expression
     | Negation of Expression
@@ -131,7 +131,7 @@ and expression cs =
         | Some (right, cs2) -> expressionLoop (Addition (left, right)) cs2
         | None ->
             match (pchar '-' >>. spaces >>. addendum) cs with
-            | Some (right, cs3) -> expressionLoop (Substraction (left, right)) cs3
+            | Some (right, cs3) -> expressionLoop (Subtraction (left, right)) cs3
             | None -> Some (left, cs)
 
     match addendum cs with
@@ -143,7 +143,7 @@ let rec evaluate expression (env: Dictionary<string, float>) =
     | Constant value -> value
     | Variable name -> env.[name]
     | Addition (left, right) -> (evaluate left env) + (evaluate right env)
-    | Substraction (left, right) -> (evaluate left env) - (evaluate right env)
+    | Subtraction (left, right) -> (evaluate left env) - (evaluate right env)
     | Multiplication (left, right) -> (evaluate left env) * (evaluate right env)
     | Division (left, right) -> (evaluate left env) / (evaluate right env)
     | Negation x -> -(evaluate x env)
@@ -169,7 +169,7 @@ let command = input <|> print <|> assignment
 
 let args = Environment.GetCommandLineArgs() 
 if args.Length <> 2 then
-    Console.WriteLine("Useage: FPDemo <filename>")
+    Console.WriteLine("Usage: FPDemo <filename>")
     exit -1
 
 let reader = File.OpenText args.[1]
