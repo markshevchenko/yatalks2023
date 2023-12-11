@@ -1,7 +1,7 @@
 input a
 input b
 input c
-d = b * b - 4 * a * c
+d = b * b - 4 * a 1* c
 x1 = (-b + sqrt(d))/(2 * a)
 x2 = (-b - sqrt(d))/(2 * a)
 print x1

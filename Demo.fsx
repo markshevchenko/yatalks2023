@@ -49,7 +49,7 @@ let (<+>) parser1 parser2 cs =
 ppred Char.IsLetter <+> ppred Char.IsDigit |> run "a1b2c3";;
 ppred Char.IsLetter <+> ppred Char.IsDigit |> run "1a2b3c";;
 
-let manyStr parser cs =
+let manyStr parser (cs: char list) =
     let rec iter accumulator cs1 =
         match parser cs1 with
         | Some (value, cs2) -> iter (accumulator + value) cs2
@@ -60,7 +60,7 @@ let manyStr parser cs =
 manyStr (ppred Char.IsDigit) (List.ofSeq "12345");;
 manyStr (ppred Char.IsDigit) (List.ofSeq "abcde");;
 
-let manyStr1 parser = parser <+> manyStr parser
+let manyStr1 parser cs = (parser <+> manyStr parser) cs
 
 manyStr1 (ppred Char.IsDigit) (List.ofSeq "abcde");;
 manyStr1 (ppred Char.IsDigit) (List.ofSeq "1abcde");;

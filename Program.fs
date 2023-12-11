@@ -175,7 +175,7 @@ if args.Length <> 2 then
 let reader = File.OpenText args.[1]
 try
     let mutable line = reader.ReadLine()
-    let mutable env = new Dictionary<string, float>()
+    let mutable env = Dictionary<string, float>()
 
     while line <> null && line <> "end" do
         match command (List.ofSeq line) with
